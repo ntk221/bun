@@ -37,6 +37,11 @@ func (m Migration) IsApplied() bool {
 
 type MigrationFunc func(ctx context.Context, db *bun.DB) error
 
+// NewSQLMigrationFunc は、nameで与えられたファイルを開いて、
+// そのファイルが .up.sql または .down.sqlという名前の場合に
+// Exec関数を呼び出す
+//
+// つまり、.up.sql, .down.sqlというファイルがマイグレーションファイルになっている
 func NewSQLMigrationFunc(fsys fs.FS, name string) MigrationFunc {
 	return func(ctx context.Context, db *bun.DB) error {
 		f, err := fsys.Open(name)
@@ -50,6 +55,7 @@ func NewSQLMigrationFunc(fsys fs.FS, name string) MigrationFunc {
 }
 
 // Exec reads and executes the SQL migration in the f.
+// --bun:split というコメント行で区切られる
 func Exec(ctx context.Context, db *bun.DB, f io.Reader, isTx bool) error {
 	scanner := bufio.NewScanner(f)
 	var queries []string
